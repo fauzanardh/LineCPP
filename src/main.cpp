@@ -17,8 +17,8 @@ using namespace LineThrift::SecondaryQrCode;
 int main() {
     // auto http_client = shared_ptr<THttpClient>(new THttpClient("legy-jp.line.naver.jp", 443, "/acct/lgn/sq/v1"));
     auto http_client = shared_ptr<TLineHttpClient>(new TLineHttpClient("legy-jp.line.naver.jp", 443, "/acct/lgn/sq/v1"));
-    // http_client->addHeader("User-Agent", "LLA/2.11.1 Redmi K20 Pro 10");
-    // http_client->addHeader("X-Line-Application", "ANDROIDLITE\t2.11.1\tAndroid OS\t10;SECONDARY");
+    http_client->addHeader("User-Agent", "LLA/2.11.1 Redmi K20 Pro 10");
+    http_client->addHeader("X-Line-Application", "ANDROIDLITE\t2.11.1\tAndroid OS\t10;SECONDARY");
     auto transport = shared_ptr<TBufferedTransport>(new TBufferedTransport(http_client));
     auto protocol = shared_ptr<TCompactProtocol>(new TCompactProtocol(transport));
     SecondaryQrCodeLoginServiceClient client(protocol);

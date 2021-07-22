@@ -1,22 +1,3 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements. See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership. The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied. See the License for the
- * specific language governing permissions and limitations
- * under the License.
- */
-
 #include <iostream>
 #include <limits>
 #include <cstdlib>
@@ -24,27 +5,15 @@
 #include <boost/algorithm/string.hpp>
 
 #include <thrift/config.h>
-#include <line/transport/custom_http_client.hpp>
 #include <thrift/transport/TSocket.h>
+#include <line/transport/custom_http_client.hpp>
 #include <utils/base64.hpp>
 
 using std::string;
-using namespace apache::thrift;
 using namespace apache::thrift::transport;
 
-TLineHttpClient::TLineHttpClient(std::shared_ptr<TTransport> transport,
-                         std::string host,
-                         std::string path,
-                         std::shared_ptr<TConfiguration> config)
-  : THttpTransport(transport, config),
-    host_(host), 
-    path_(path),
-    headers_(new std::map<std::string, std::string>{}) {
-}
-
-TLineHttpClient::TLineHttpClient(string host, int port, string path, 
-                         std::shared_ptr<TConfiguration> config)
-  : THttpTransport(std::shared_ptr<TTransport>(new TSocket(host, port)), config),
+TLineHttpClient::TLineHttpClient(string host, int port, string path)
+  : THttpTransport(std::shared_ptr<TTransport>(new TSocket(host, port))),
     host_(host),
     path_(path),
     headers_(new std::map<std::string, std::string>{}) {
@@ -107,10 +76,17 @@ void TLineHttpClient::flush() {
 
   // Construct the HTTP header
   std::ostringstream h;
-  h << "POST " << path_ << " HTTP/1.1" << CRLF << "Host: " << host_ << CRLF
-    << "Content-Type: application/x-thrift" << CRLF << "Content-Length: " << len << CRLF
-    << "Accept: application/x-thrift" << CRLF << "User-Agent: Thrift/" << PACKAGE_VERSION
-    << " (C++/TLineHttpClient)" << CRLF << CRLF;
+  h << "POST " << path_ << " HTTP/1.1" << CRLF
+    << "Host: " << host_ << CRLF
+    << "Accept: application/x-thrift" << CRLF
+    << "Connection: keep-alive" << CRLF
+    << "Content-Type: application/x-thrift" << CRLF
+    << "Content-Length: " << len << CRLF;
+
+  for (auto const& m : *headers_) {
+    h << m.first << ": " << m.second << CRLF;
+  }
+  h << CRLF << CRLF;
   string header = h.str();
 
   std::cout << "Headers:\n" << header << "Body:\n" << LineCPP::Base64().Encode(std::string(reinterpret_cast<char *>(buf))) << "\n";
@@ -129,4 +105,9 @@ void TLineHttpClient::flush() {
 
 void TLineHttpClient::setPath(std::string path) {
   path_ = path;
+}
+
+void TLineHttpClient::addHeader(std::string key, std::string value) 
+{
+  headers_->insert({key, value});
 }
