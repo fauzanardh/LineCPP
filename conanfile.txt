@@ -1,0 +1,5 @@
+[requires]
+thrift/0.14.2
+
+[generators]
+cmake

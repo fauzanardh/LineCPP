@@ -1,0 +1,3 @@
+[submodule "extras/line-messenger-protocol"]
+	path = extras/line-messenger-protocol
+	url = https://github.com/Shivelight/line-messenger-protocol
